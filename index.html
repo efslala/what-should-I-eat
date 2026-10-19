@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f6f3ec" />
+  <title>What Should I Eat Tomorrow?｜明天吃什麼</title>
+  <style>
+    :root {
+      --cream: #f6f3ec;
+      --paper: #fffefa;
+      --sage: #788a75;
+      --sage-dark: #536750;
+      --sage-light: #e5e9de;
+      --ink: #333b35;
+      --muted: #747b72;
+      --line: #e4e0d6;
+      --shadow: 0 16px 40px rgba(51, 59, 53, .07);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 8% 4%, rgba(229, 233, 222, .65), transparent 26rem),
+        var(--cream);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC",
+        "PingFang TC", "Microsoft JhengHei", sans-serif;
+      line-height: 1.6;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .page {
+      width: min(1080px, calc(100% - 36px));
+      margin: 0 auto;
+      padding: 26px 0 42px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 8px 2px 22px;
+      border-bottom: 1px solid rgba(120, 138, 117, .25);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-size: .98rem;
+      font-weight: 750;
+      letter-spacing: -.025em;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 13px;
+      color: var(--sage-dark);
+      background: var(--sage-light);
+      font-size: 1.25rem;
+    }
+
+    .header-note {
+      color: var(--muted);
+      font-size: .82rem;
+    }
+
+    .intro {
+      text-align: center;
+      padding: 34px 0 24px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--sage-dark);
+      background: rgba(229, 233, 222, .72);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: .76rem;
+      font-weight: 750;
+      letter-spacing: .08em;
+    }
+
+    h1 {
+      margin: 13px 0 7px;
+      font-size: clamp(2rem, 5vw, 3.3rem);
+      line-height: 1.18;
+      letter-spacing: -.055em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: .98rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.12fr) minmax(300px, .88fr);
+      align-items: start;
+      gap: 22px;
+    }
+
+    .panel {
+      background: rgba(255, 254, 250, .88);
+      border: 1px solid rgba(228, 224, 214, .9);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .wheel-panel {
+      padding: 25px 24px 23px;
+      text-align: center;
+    }
+
+    .panel-kicker {
+      margin: 0 0 3px;
+      color: var(--muted);
+      font-size: .76rem;
+      font-weight: 750;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 1.22rem;
+      letter-spacing: -.025em;
+    }
+
+    .wheel-wrap {
+      position: relative;
+      width: min(100%, 430px);
+      aspect-ratio: 1;
+      margin: 18px auto 20px;
+    }
+
+    #wheel {
+      display: block;
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 9px 10px rgba(51, 59, 53, .12));
+    }
+
+    .pointer {
+      position: absolute;
+      z-index: 2;
+      top: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+      border-top: 27px solid var(--ink);
+      filter: drop-shadow(0 2px 1px rgba(0,0,0,.12));
+    }
+
+    .spin-button, .secondary-button, .add-button, .remove-button {
+      border: 0;
+      transition: transform .15s ease, background .15s ease, box-shadow .15s ease;
+    }
+
+    .spin-button {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      padding: 15px 20px;
+      border-radius: 15px;
+      background: var(--sage);
+      color: white;
+      font-weight: 800;
+      box-shadow: 0 7px 0 #647660;
+    }
+
+    .spin-button:hover { background: #6e826b; transform: translateY(-1px); }
+    .spin-button:active { transform: translateY(3px); box-shadow: 0 4px 0 #647660; }
+    .spin-button:disabled { opacity: .72; cursor: wait; transform: none; }
+    .spin-icon { font-size: 1.2rem; }
+
+    .hint {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: .78rem;
+    }
+
+    .side-column { display: grid; gap: 18px; }
+
+    .result-panel, .list-panel { padding: 23px; }
+
+    .result-label {
+      margin: 0 0 9px;
+      color: var(--sage-dark);
+      font-size: .75rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+    }
+
+    .result-box {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 17px;
+      min-height: 108px;
+      background: var(--sage-light);
+      border-radius: 17px;
+    }
+
+    .result-emoji {
+      display: grid;
+      flex: 0 0 62px;
+      width: 62px;
+      height: 62px;
+      place-items: center;
+      background: rgba(255,255,255,.72);
+      border-radius: 18px;
+      font-size: 2rem;
+    }
+
+    .result-caption {
+      margin: 0 0 2px;
+      color: var(--muted);
+      font-size: .78rem;
+    }
+
+    .result-name {
+      margin: 0;
+      font-size: 1.45rem;
+      line-height: 1.35;
+      letter-spacing: -.035em;
+    }
+
+    .result-description {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: .8rem;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 9px;
+      margin-top: 14px;
+    }
+
+    .secondary-button {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      font-size: .87rem;
+      font-weight: 700;
+    }
+
+    .secondary-button:hover { background: #f5f4ee; }
+
+    .list-heading {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .count {
+      padding: 4px 9px;
+      border-radius: 999px;
+      color: var(--sage-dark);
+      background: var(--sage-light);
+      white-space: nowrap;
+      font-size: .75rem;
+      font-weight: 800;
+    }
+
+    .add-form {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .add-form input {
+      min-width: 0;
+      flex: 1;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fffefa;
+      color: var(--ink);
+      outline: none;
+    }
+
+    .add-form input:focus {
+      border-color: var(--sage);
+      box-shadow: 0 0 0 3px rgba(120, 138, 117, .14);
+    }
+
+    .add-button {
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: var(--ink);
+      color: white;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .add-button:hover { background: #4a554c; }
+
+    .food-list {
+      display: grid;
+      gap: 8px;
+      max-height: 265px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .food-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 11px;
+      border: 1px solid #eeebe3;
+      border-radius: 12px;
+      background: #fffefa;
+    }
+
+    .food-item-emoji { font-size: 1.15rem; }
+    .food-name { flex: 1; min-width: 0; font-size: .9rem; font-weight: 650; overflow-wrap: anywhere; }
+
+    .remove-button {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      color: #8a8d84;
+      background: transparent;
+      font-size: 1.15rem;
+    }
+
+    .remove-button:hover { color: #9c4c45; background: #f8e9e5; }
+    .remove-button:disabled { opacity: .3; cursor: not-allowed; }
+
+    .empty-list {
+      margin: 0;
+      padding: 16px 8px;
+      text-align: center;
+      color: var(--muted);
+      font-size: .86rem;
+    }
+
+    .toast {
+      min-height: 22px;
+      margin: 10px 0 0;
+      color: #9c4c45;
+      font-size: .8rem;
+    }
+
+    footer {
+      padding: 24px 0 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: .78rem;
+    }
+
+    @media (max-width: 760px) {
+      .page { width: min(560px, calc(100% - 24px)); padding-top: 16px; }
+      header { padding-bottom: 16px; }
+      .header-note { display: none; }
+      .intro { padding: 28px 0 22px; }
+      .layout { grid-template-columns: 1fr; gap: 16px; }
+      .wheel-panel { padding: 22px 17px 20px; }
+      .wheel-wrap { width: min(100%, 380px); margin: 16px auto 19px; }
+      .result-panel, .list-panel { padding: 20px; }
+      .side-column { gap: 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">✳</div>
+        <span>What Should I Eat?</span>
+      </div>
+      <div class="header-note">A little help with tomorrow's decision.</div>
+    </header>
+
+    <main>
+      <section class="intro">
+        <div class="eyebrow"><span aria-hidden="true">✦</span> YOUR DAILY FOOD PICKER</div>
+        <h1>明天吃什麼？</h1>
+        <p class="subtitle">選不出來？讓轉盤幫你決定。</p>
+      </section>
+
+      <div class="layout">
+        <section class="panel wheel-panel" aria-labelledby="wheel-heading">
+          <p class="panel-kicker">Spin the wheel</p>
+          <h2 class="panel-title" id="wheel-heading">今天不煩惱，明天有答案</h2>
+
+          <div class="wheel-wrap">
+            <div class="pointer" aria-hidden="true"></div>
+            <canvas id="wheel" width="600" height="600" role="img" aria-label="美食隨機轉盤"></canvas>
+          </div>
+
+          <button class="spin-button" id="spinButton" type="button">
+            <span class="spin-icon" aria-hidden="true">⟳</span>
+            <span id="spinButtonText">幫我決定！</span>
+          </button>
+          <p class="hint">深呼吸，交給一點點運氣吧。</p>
+        </section>
+
+        <div class="side-column">
+          <section class="panel result-panel" aria-live="polite" aria-labelledby="result-heading">
+            <p class="result-label">YOUR RESULT</p>
+            <div class="result-box">
+              <div class="result-emoji" id="resultEmoji" aria-hidden="true">🍽️</div>
+              <div>
+                <p class="result-caption" id="resultCaption">準備好迎接美味了嗎？</p>
+                <h2 class="result-name" id="result-heading">明天就吃這個！</h2>
+                <p class="result-description" id="resultDescription">按下轉盤，看看命運的安排。</p>
+              </div>
+            </div>
+            <div class="result-actions">
+              <button class="secondary-button" id="againButton" type="button">再轉一次 ↻</button>
+              <button class="secondary-button" id="resetButton" type="button">重設結果</button>
+            </div>
+          </section>
+
+          <section class="panel list-panel" aria-labelledby="list-heading">
+            <div class="list-heading">
+              <div>
+                <p class="panel-kicker">Your food list</p>
+                <h2 class="panel-title" id="list-heading">我的美食清單</h2>
+              </div>
+              <span class="count" id="foodCount">8 種餐點</span>
+            </div>
+
+            <form class="add-form" id="addForm">
+              <input id="foodInput" type="text" maxlength="24" placeholder="例如：咖哩飯" aria-label="輸入想加入的餐點" autocomplete="off" />
+              <button class="add-button" type="submit">＋ 新增</button>
+            </form>
+            <div class="food-list" id="foodList"></div>
+            <p class="toast" id="message" role="status"></p>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer>Made for the little decisions · 明天也要好好吃飯。</footer>
+  </div>
+
+  <script>
+    (() => {
+      const DEFAULT_FOODS = [
+        { name: "便當", emoji: "🍱" },
+        { name: "拉麵", emoji: "🍜" },
+        { name: "火鍋", emoji: "🍲" },
+        { name: "滷肉飯", emoji: "🍚" },
+        { name: "義大利麵", emoji: "🍝" },
+        { name: "壽司", emoji: "🍣" },
+        { name: "漢堡", emoji: "🍔" },
+        { name: "水餃", emoji: "🥟" }
+      ];
+      const COLORS = ["#DDE5D6", "#F2E3C9", "#D8E3E4", "#E9D9D0", "#E7E4F0", "#F1DCCF", "#DCE8E0", "#F1E8B9"];
+      const STORAGE_KEY = "what-should-i-eat-foods-v1";
+
+      const canvas = document.getElementById("wheel");
+      const ctx = canvas.getContext("2d");
+      const spinButton = document.getElementById("spinButton");
+      const spinButtonText = document.getElementById("spinButtonText");
+      const againButton = document.getElementById("againButton");
+      const resetButton = document.getElementById("resetButton");
+      const addForm = document.getElementById("addForm");
+      const foodInput = document.getElementById("foodInput");
+      const foodList = document.getElementById("foodList");
+      const foodCount = document.getElementById("foodCount");
+      const message = document.getElementById("message");
+      const resultEmoji = document.getElementById("resultEmoji");
+      const resultHeading = document.getElementById("result-heading");
+      const resultCaption = document.getElementById("resultCaption");
+      const resultDescription = document.getElementById("resultDescription");
+
+      let foods = loadFoods();
+      let rotation = 0;
+      let spinning = false;
+      let messageTimer = null;
+
+      function loadFoods() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length && parsed.every(item =>
+              item && typeof item.name === "string" && typeof item.emoji === "string"
+            )) return parsed;
+          }
+        } catch (error) {
+          // If local storage is unavailable, use the default list.
+        }
+        return DEFAULT_FOODS.map(food => ({ ...food }));
+      }
+
+      function saveFoods() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(foods));
+        } catch (error) {
+          showMessage("瀏覽器未能儲存清單；本次開啟仍可正常使用。");
+        }
+      }
+
+      function emojiFor(name) {
+        const lower = name.toLowerCase();
+        const choices = [
+          [/拉麵|麵線|牛肉麵|麵/, "🍜"],
+          [/飯|便當|丼|咖哩/, "🍱"],
+          [/火鍋|鍋/, "🍲"],
+          [/壽司|生魚片/, "🍣"],
+          [/漢堡/, "🍔"],
+          [/披薩|pizza/i, "🍕"],
+          [/水餃|餃子|鍋貼/, "🥟"],
+          [/義大利麵|義面|意麵/, "🍝"],
+          [/沙拉/, "🥗"],
+          [/早餐|吐司|三明治/, "🥪"],
+          [/雞排|炸雞|雞/, "🍗"],
+          [/甜點|蛋糕|鬆餅|冰淇淋|甜/, "🍰"],
+          [/咖啡|飲料|奶茶|珍珠/, "🧋"],
+          [/粥/, "🥣"],
+          [/燒肉|烤肉/, "🥩"],
+          [/麵包/, "🥐"]
+        ];
+        for (const [pattern, emoji] of choices) if (pattern.test(lower)) return emoji;
+        return "🍽️";
+      }
+
+      function showMessage(text) {
+        message.textContent = text;
+        clearTimeout(messageTimer);
+        if (text) {
+          messageTimer = setTimeout(() => { message.textContent = ""; }, 3000);
+        }
+      }
+
+      function drawWheel() {
+        const size = canvas.width;
+        const center = size / 2;
+        const radius = size / 2 - 12;
+        ctx.clearRect(0, 0, size, size);
+
+        if (!foods.length) return;
+        const slice = (Math.PI * 2) / foods.length;
+        const startAtTop = -Math.PI / 2;
+
+        foods.forEach((food, index) => {
+          const start = startAtTop + rotation + index * slice;
+          const end = start + slice;
+          ctx.beginPath();
+          ctx.moveTo(center, center);
+          ctx.arc(center, center, radius, start, end);
+          ctx.closePath();
+          ctx.fillStyle = COLORS[index % COLORS.length];
+          ctx.fill();
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = "#FFFEFA";
+          ctx.stroke();
+
+          const middle = start + slice / 2;
+          const textRadius = radius * (foods.length > 10 ? 0.68 : 0.65);
+          const x = center + Math.cos(middle) * textRadius;
+          const y = center + Math.sin(middle) * textRadius;
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(middle + Math.PI / 2);
+          const emojiSize = foods.length > 10 ? 23 : 29;
+          const labelSize = foods.length > 10 ? 17 : (foods.length > 8 ? 19 : 21);
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = `${emojiSize}px "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
+          ctx.fillStyle = "#333B35";
+          ctx.fillText(food.emoji, 0, -13);
+          ctx.font = `700 ${labelSize}px -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif`;
+          ctx.fillText(food.name.length > 7 ? food.name.slice(0, 7) + "…" : food.name, 0, 18);
+          ctx.restore();
+        });
+
+        ctx.beginPath();
+        ctx.arc(center, center, 48, 0, Math.PI * 2);
+        ctx.fillStyle = "#FFFEFA";
+        ctx.fill();
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = "#788A75";
+        ctx.stroke();
+        ctx.fillStyle = "#536750";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = '700 20px -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif';
+        ctx.fillText("吃什麼", center, center);
+      }
+
+      function renderFoodList() {
+        foodList.replaceChildren();
+        foodCount.textContent = `${foods.length} 種餐點`;
+
+        if (!foods.length) {
+          const empty = document.createElement("p");
+          empty.className = "empty-list";
+          empty.textContent = "清單是空的，先新增一道美食吧。";
+          foodList.appendChild(empty);
+          return;
+        }
+
+        foods.forEach((food, index) => {
+          const row = document.createElement("div");
+          row.className = "food-item";
+
+          const emoji = document.createElement("span");
+          emoji.className = "food-item-emoji";
+          emoji.textContent = food.emoji;
+          emoji.setAttribute("aria-hidden", "true");
+
+          const name = document.createElement("span");
+          name.className = "food-name";
+          name.textContent = food.name;
+
+          const remove = document.createElement("button");
+          remove.className = "remove-button";
+          remove.type = "button";
+          remove.textContent = "×";
+          remove.setAttribute("aria-label", `刪除${food.name}`);
+          remove.title = `刪除${food.name}`;
+          remove.disabled = spinning || foods.length <= 1;
+          remove.addEventListener("click", () => removeFood(index));
+
+          row.append(emoji, name, remove);
+          foodList.appendChild(row);
+        });
+      }
+
+      function renderAll() {
+        drawWheel();
+        renderFoodList();
+      }
+
+      function showResult(food) {
+        resultEmoji.textContent = food.emoji;
+        resultCaption.textContent = "命運轉盤選中了";
+        resultHeading.textContent = food.name + "！";
+        resultDescription.textContent = "決定好了，明天就去吃一頓喜歡的吧。";
+      }
+
+      function spin() {
+        if (spinning || foods.length === 0) return;
+        spinning = true;
+        spinButton.disabled = true;
+        spinButtonText.textContent = "轉盤旋轉中…";
+        againButton.disabled = true;
+        resetButton.disabled = true;
+        foodInput.disabled = true;
+        addForm.querySelector("button").disabled = true;
+        renderFoodList();
+        showMessage("");
+
+        const count = foods.length;
+        const slice = (Math.PI * 2) / count;
+        const selectedIndex = Math.floor(Math.random() * count);
+        // Pointer sits at -90 degrees. Rotate the selected slice's center to the top.
+        const desired = ((Math.PI * 2) - ((selectedIndex + 0.5) * slice)) % (Math.PI * 2);
+        const current = ((rotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+        const extraTurns = (5 + Math.floor(Math.random() * 3)) * Math.PI * 2;
+        const delta = extraTurns + ((desired - current + Math.PI * 2) % (Math.PI * 2));
+        const startRotation = rotation;
+        const endRotation = rotation + delta;
+        const duration = 4200;
+        const startTime = performance.now();
+
+        function animate(now) {
+          const progress = Math.min((now - startTime) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 4);
+          rotation = startRotation + delta * eased;
+          drawWheel();
+
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+          } else {
+            rotation = ((endRotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+            drawWheel();
+            showResult(foods[selectedIndex]);
+            spinning = false;
+            spinButton.disabled = false;
+            spinButtonText.textContent = "再幫我選一次！";
+            againButton.disabled = false;
+            resetButton.disabled = false;
+            foodInput.disabled = false;
+            addForm.querySelector("button").disabled = false;
+            renderFoodList();
+          }
+        }
+        requestAnimationFrame(animate);
+      }
+
+      function addFood(name) {
+        const cleanName = name.trim();
+        if (!cleanName) {
+          showMessage("先輸入一道想吃的食物喔。");
+          foodInput.focus();
+          return;
+        }
+        if (foods.some(food => food.name.toLocaleLowerCase() === cleanName.toLocaleLowerCase())) {
+          showMessage("這道餐點已經在清單裡了。");
+          foodInput.focus();
+          return;
+        }
+        foods.push({ name: cleanName, emoji: emojiFor(cleanName) });
+        saveFoods();
+        renderAll();
+        foodInput.value = "";
+        showMessage(`已加入「${cleanName}」！`);
+        foodInput.focus();
+      }
+
+      function removeFood(index) {
+        if (spinning) return;
+        if (foods.length <= 1) {
+          showMessage("至少保留一道餐點，轉盤才能繼續運作。");
+          return;
+        }
+        const removed = foods.splice(index, 1)[0];
+        saveFoods();
+        renderAll();
+        showMessage(`已移除「${removed.name}」。`);
+      }
+
+      function resetResult() {
+        resultEmoji.textContent = "🍽️";
+        resultCaption.textContent = "準備好迎接美味了嗎？";
+        resultHeading.textContent = "明天就吃這個！";
+        resultDescription.textContent = "按下轉盤，看看命運的安排。";
+        showMessage("");
+      }
+
+      spinButton.addEventListener("click", spin);
+      againButton.addEventListener("click", spin);
+      resetButton.addEventListener("click", resetResult);
+      addForm.addEventListener("submit", event => {
+        event.preventDefault();
+        addFood(foodInput.value);
+      });
+
+      renderAll();
+    })();
+  </script>
+</body>
+</html>
